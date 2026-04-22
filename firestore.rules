@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitives
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    // Entity Validations
+    function isValidResume(data) {
+      return data.slug is string && 
+             data.slug.size() >= 2 && 
+             data.slug.size() <= 100 &&
+             data.data is map &&
+             data.createdAt == request.time;
+    }
+
+    // Collection Security
+    match /resumes/{resumeId} {
+      // Publicly viewable by ID (slug)
+      allow get: if isValidId(resumeId);
+      
+      // Prohibit dictionary attacks or discovery
+      allow list: if false;
+      
+      // Allow anonymous users to save their resume if the slug is unique
+      allow create: if isValidId(resumeId) && 
+                      isValidResume(incoming()) && 
+                      incoming().slug == resumeId;
+    }
+  }
+}

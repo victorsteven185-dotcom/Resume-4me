@@ -1,0 +1,21 @@
+{
+  "entities": {
+    "Resume": {
+      "title": "Resume Data",
+      "description": "Stores the complete resume information and a custom slug.",
+      "type": "object",
+      "properties": {
+        "slug": { "type": "string", "description": "Human-readable URL slug." },
+        "data": { "type": "object", "description": "The complete ResumeData JSON object." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["slug", "data", "createdAt"]
+    }
+  },
+  "firestore": {
+    "resumes/{resumeId}": {
+      "schema": "Resume",
+      "description": "Collection of saved resumes indexed by a unique ID or slug."
+    }
+  }
+}
